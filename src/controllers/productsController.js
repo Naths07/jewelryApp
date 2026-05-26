@@ -53,8 +53,8 @@ const createProduct = async (req, res) => {
       return res.status(400).json({ error: `type must be one of: ${VALID_TYPES.join(', ')}` });
 
     const result = await pool.query(
-      'INSERT INTO products (name, type) VALUES ($1, $2) RETURNING *',
-      [name, type]
+      'INSERT INTO products (name, type,image_url) VALUES ($1, $2, $3) RETURNING *',
+      [name, type, req.body.image_url || null]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -74,10 +74,11 @@ const updateProduct = async (req, res) => {
     const result = await pool.query(
       `UPDATE products
        SET name = COALESCE($1, name),
-           type = COALESCE($2, type)
-       WHERE product_no = $3
+           type = COALESCE($2, type),
+           image_url = COALESCE($3, image_url)
+       WHERE product_no = $4
        RETURNING *`,
-      [name, type, product_no]
+      [name, type, req.body.image_url || null, product_no]
     );
 
     if (result.rows.length === 0)
